@@ -82,6 +82,20 @@ public class Mongobee implements InitializingBean {
   }
 
   /**
+   * <p>Constructor takes db.mongodb.MongoClient object as a parameter.
+   * </p><p>For more details about <tt>MongoClient</tt> please see com.mongodb.MongoClient docs
+   * </p>
+   *
+   * @param mongoClient database connection client
+   * @see MongoClient
+   */
+  public Mongobee(MongoClient mongoClient) {
+    this.mongoClient = mongoClient;
+    this.dao = new ChangeEntryDao(DEFAULT_CHANGELOG_COLLECTION_NAME, DEFAULT_LOCK_COLLECTION_NAME, DEFAULT_WAIT_FOR_LOCK,
+        DEFAULT_CHANGE_LOG_LOCK_WAIT_TIME, DEFAULT_CHANGE_LOG_LOCK_POLL_RATE, DEFAULT_THROW_EXCEPTION_IF_CANNOT_OBTAIN_LOCK);
+  }
+
+  /**
    * <p>Mongobee runner. Correct MongoDB URI should be provided.</p>
    * <p>The format of the URI is:
    * <pre>
