@@ -1,22 +1,20 @@
 package com.github.mongobee.dao;
 
-import static org.springframework.util.StringUtils.hasText;
-
-import java.util.Date;
-
-import org.bson.Document;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.github.mongobee.changeset.ChangeEntry;
 import com.github.mongobee.exception.MongobeeConfigurationException;
 import com.github.mongobee.exception.MongobeeConnectionException;
 import com.github.mongobee.exception.MongobeeLockException;
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Date;
+
+import static org.springframework.util.StringUtils.hasText;
 
 /**
  * @author lstolowski
@@ -74,14 +72,6 @@ public class ChangeEntryDao {
       initializeLock();
       return mongoDatabase;
     }
-  }
-
-  public MongoDatabase connectMongoDb(MongoClientURI mongoClientURI, String dbName)
-      throws MongobeeConfigurationException, MongobeeConnectionException {
-
-    final MongoClient mongoClient = new MongoClient(mongoClientURI);
-    final String database = (!hasText(dbName)) ? mongoClientURI.getDatabase() : dbName;
-    return this.connectMongoDb(mongoClient, database);
   }
 
   /**

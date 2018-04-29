@@ -7,6 +7,7 @@ import com.github.mongobee.dao.ChangeEntryIndexDao;
 import com.github.mongobee.resources.EnvironmentMock;
 import com.github.mongobee.test.changelogs.EnvironmentDependentTestResource;
 import com.mongodb.DB;
+import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
@@ -16,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
@@ -35,6 +37,9 @@ public class MongobeeEnvTest {
   private Mongobee runner = new Mongobee();
 
   @Mock
+  private MongoClient mongoClient;
+
+  @Mock
   private ChangeEntryDao dao;
 
   @Mock
@@ -46,14 +51,19 @@ public class MongobeeEnvTest {
 
   @Before
   public void init() throws Exception {
-    fakeDb = new Fongo("testServer").getDB("mongobeetest");
-    fakeMongoDatabase = new Fongo("testServer").getDatabase("mongobeetest");
+    Fongo fongo = new Fongo("testServer");
+    fakeDb = fongo.getDB("mongobeetest");
 
-    when(dao.connectMongoDb(any(MongoClientURI.class), anyString()))
+    fakeMongoDatabase = new Fongo("testServer").getDatabase("mongobeetest");
+    fakeMongoDatabase.getCollection("toto");
+    when(dao.connectMongoDb(any(MongoClient.class), anyString()))
         .thenReturn(fakeMongoDatabase);
+
     when(dao.getDb()).thenReturn(fakeDb);
     when(dao.getMongoDatabase()).thenReturn(fakeMongoDatabase);
+
     when(dao.acquireProcessLock()).thenReturn(true);
+
     doCallRealMethod().when(dao).save(any(ChangeEntry.class));
     doCallRealMethod().when(dao).setChangelogCollectionName(anyString());
     doCallRealMethod().when(dao).setIndexDao(any(ChangeEntryIndexDao.class));
@@ -62,6 +72,7 @@ public class MongobeeEnvTest {
 
     runner.setDbName("mongobeetest");
     runner.setEnabled(true);
+
   }  // TODO code duplication
 
   @Test

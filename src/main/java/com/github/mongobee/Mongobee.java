@@ -76,20 +76,7 @@ public class Mongobee implements InitializingBean {
   public Mongobee(MongoClientURI mongoClientURI) {
     this.mongoClientURI = mongoClientURI;
     this.setDbName(mongoClientURI.getDatabase());
-    this.dao = new ChangeEntryDao(DEFAULT_CHANGELOG_COLLECTION_NAME, DEFAULT_LOCK_COLLECTION_NAME, DEFAULT_WAIT_FOR_LOCK,
-        DEFAULT_CHANGE_LOG_LOCK_WAIT_TIME, DEFAULT_CHANGE_LOG_LOCK_POLL_RATE, DEFAULT_THROW_EXCEPTION_IF_CANNOT_OBTAIN_LOCK);
-  }
-
-  /**
-   * <p>Constructor takes db.mongodb.MongoClient object as a parameter.
-   * </p><p>For more details about <tt>MongoClient</tt> please see com.mongodb.MongoClient docs
-   * </p>
-   *
-   * @param mongoClient database connection client
-   * @see MongoClient
-   */
-  public Mongobee(MongoClient mongoClient) {
-    this.mongoClient = mongoClient;
+    this.mongoClient = new MongoClient(mongoClientURI);
     this.dao = new ChangeEntryDao(DEFAULT_CHANGELOG_COLLECTION_NAME, DEFAULT_LOCK_COLLECTION_NAME, DEFAULT_WAIT_FOR_LOCK,
         DEFAULT_CHANGE_LOG_LOCK_WAIT_TIME, DEFAULT_CHANGE_LOG_LOCK_POLL_RATE, DEFAULT_THROW_EXCEPTION_IF_CANNOT_OBTAIN_LOCK);
   }
@@ -146,11 +133,7 @@ public class Mongobee implements InitializingBean {
 
     validateConfig();
 
-    if (this.mongoClient != null) {
-      dao.connectMongoDb(this.mongoClient, dbName);
-    } else {
-      dao.connectMongoDb(this.mongoClientURI, dbName);
-    }
+    dao.connectMongoDb(this.mongoClient, dbName);
 
     if (!dao.acquireProcessLock()) {
       logger.info("Mongobee did not acquire process lock. Exiting.");
@@ -228,13 +211,13 @@ public class Mongobee implements InitializingBean {
         && changeSetMethod.getParameterTypes()[0].equals(MongoTemplate.class)) {
       logger.debug("method with MongoTemplate argument");
 
-      return changeSetMethod.invoke(changeLogInstance, mongoTemplate != null ? mongoTemplate : new MongoTemplate(db.getMongo(), dbName));
+      return changeSetMethod.invoke(changeLogInstance, mongoTemplate != null ? mongoTemplate : new MongoTemplate(mongoClient, dbName));
     } else if (changeSetMethod.getParameterTypes().length == 2
         && changeSetMethod.getParameterTypes()[0].equals(MongoTemplate.class)
         && changeSetMethod.getParameterTypes()[1].equals(Environment.class)) {
       logger.debug("method with MongoTemplate and environment arguments");
 
-      return changeSetMethod.invoke(changeLogInstance, mongoTemplate != null ? mongoTemplate : new MongoTemplate(db.getMongo(), dbName), springEnvironment);
+      return changeSetMethod.invoke(changeLogInstance, mongoTemplate != null ? mongoTemplate : new MongoTemplate(mongoClient, dbName), springEnvironment);
     } else if (changeSetMethod.getParameterTypes().length == 1
         && changeSetMethod.getParameterTypes()[0].equals(MongoDatabase.class)) {
       logger.debug("method with DB argument");

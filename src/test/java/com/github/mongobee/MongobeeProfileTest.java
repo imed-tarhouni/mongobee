@@ -9,6 +9,7 @@ import com.github.mongobee.test.changelogs.AnotherMongobeeTestResource;
 import com.github.mongobee.test.profiles.def.UnProfiledChangeLog;
 import com.github.mongobee.test.profiles.dev.ProfiledDevChangeLog;
 import com.mongodb.DB;
+import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
@@ -55,7 +56,7 @@ public class MongobeeProfileTest {
     fakeDb = new Fongo("testServer").getDB("mongobeetest");
     fakeMongoDatabase = new Fongo("testServer").getDatabase("mongobeetest");
 
-    when(dao.connectMongoDb(any(MongoClientURI.class), anyString()))
+    when(dao.connectMongoDb(any(MongoClient.class), anyString()))
         .thenReturn(fakeMongoDatabase);
     when(dao.getDb()).thenReturn(fakeDb);
     when(dao.getMongoDatabase()).thenReturn(fakeMongoDatabase);
